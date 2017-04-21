@@ -144,18 +144,22 @@ function checkAttributes (priority, element, ignore, path, parent = element.pare
  * @return {string?}                 - [description]
  */
 function findAttributesPattern (priority, element, ignore) {
-    const attributes = element.attributes
-    const sortedKeys = Object.keys(attributes).sort((curr, next) => {
-        const currPos = priority.indexOf(attributes[curr].name)
-        const nextPos = priority.indexOf(attributes[next].name)
-        if (nextPos === -1) {
-            if (currPos === -1) {
-                return 0
-            }
-            return -1
-        }
-        return currPos - nextPos
-    })
+  const attributes = element.attributes
+  var keys = [];
+  for(var i = 0; i < attributes.length; i++) {
+    // skip null attributes in IE 11
+    if (attributes[i]) {
+      keys.push(i);
+    }
+  }
+  const sortedKeys = Object.keys(attributes).sort((curr, next) => {
+    const currPos = priority.indexOf(attributes[curr].name)
+    const nextPos = priority.indexOf(attributes[next].name)
+    if (currPos === -1 || nextPos === -1) {
+      return nextPos - currPos;
+    }
+    return currPos - nextPos
+  })
 
     for (var i = 0, l = sortedKeys.length; i < l; i++) {
         const key = sortedKeys[i]
