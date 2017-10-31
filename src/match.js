@@ -155,6 +155,7 @@ function findAttributesPattern (priority, element, ignore) {
     const attributeValue = escapeValue(attribute.value)
 
     const currentIgnore = ignore[attributeName] || ignore.attribute
+    const currentIgnore = ignore[attributeName] || ignore.attribute
     const currentDefaultIgnore = defaultIgnore[attributeName] || defaultIgnore.attribute
     if (checkIgnore(currentIgnore, attributeName, attributeValue, currentDefaultIgnore)) {
       continue
@@ -168,7 +169,13 @@ function findAttributesPattern (priority, element, ignore) {
       }
 
       if (attributeName === 'class') {
-        const className = attributeValue.trim().replace(/\s+/g, '.')
+        var classes = attributeValue.trim();
+        const className;
+        if(ignore.ignoreClass) {
+           className = ignore.ignoreClass.split(/\s+/g).filter(ignore.ignoreClass).join('.')
+        } else {
+           className = attributeValue.trim().replace(/\s+/g, '.')
+        }
         pattern = `.${className}`
       }
     }
