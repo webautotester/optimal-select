@@ -24,93 +24,83 @@ const defaultIgnore = {
  * @return {string}              - [description]
  */
 export default function match (node, options) {
-
-<<<<<<< HEAD
-  const {
-    root = window.top.document,
-    skip = null,
-    priority = ['id', 'class', 'href', 'src'],
-    ignore = {}
-  } = options
-=======
     const {
         root = document,
         skip = null,
         priority = ['id', 'class', 'href', 'src'],
         ignore = {}
-    } = options
+    } = options;
 
-    const path = []
-    var element = node
-    var length = path.length
-    var ignoreClass = false
->>>>>>> ed223b2... Update match.js
+    const path = [];
+    var element = node;
+    var length = path.length;
+    var ignoreClass = false;
 
     const skipCompare = skip && (Array.isArray(skip) ? skip : [skip]).map((entry) => {
         if (typeof entry !== 'function') {
-            return (element) => element === entry
+            return (element) => element === entry;
         }
-        return entry
+        return entry;
     })
 
     const skipChecks = (element) => {
-        return skip && skipCompare.some((compare) => compare(element))
+        return skip && skipCompare.some((compare) => compare(element));
     }
 
     Object.keys(ignore).forEach((type) => {
         if (type === 'class') {
-            ignoreClass = true
+            ignoreClass = true;
         }
         var predicate = ignore[type]
-        if (typeof predicate === 'function') return
+        if (typeof predicate === 'function') return;
         if (typeof predicate === 'number') {
-            predicate = predicate.toString()
+            predicate = predicate.toString();
         }
         if (typeof predicate === 'string') {
-            predicate = new RegExp(escapeValue(predicate).replace(/\\/g, '\\\\'))
+            predicate = new RegExp(escapeValue(predicate).replace(/\\/g, '\\\\'));
         }
         if (typeof predicate === 'boolean') {
-            predicate = predicate ? /(?:)/ : /.^/
+            predicate = predicate ? /(?:)/ : /.^/;
         }
         // check class-/attributename for regex
-        ignore[type] = (name, value) => predicate.test(value)
+        ignore[type] = (name, value) => predicate.test(value);
     })
 
     if (ignoreClass) {
-        const ignoreAttribute = ignore.attribute
+        const ignoreAttribute = ignore.attribute;
         ignore.attribute = (name, value, defaultPredicate) => {
-            return ignore.class(value) || ignoreAttribute && ignoreAttribute(name, value, defaultPredicate)
+            return ignore.class(value) || ignoreAttribute && ignoreAttribute(name, value, defaultPredicate);
         }
     }
 
     while (element !== root) {
         if (skipChecks(element) !== true) {
             // ~ global
-            if (checkAttributes(priority, element, ignore, path, root)) break
-            if (checkTag(element, ignore, path, root)) break
+            if (checkAttributes(priority, element, ignore, path, root)) break;
+            if (checkTag(element, ignore, path, root)) break;
 
             // ~ local
-            checkAttributes(priority, element, ignore, path)
+            checkAttributes(priority, element, ignore, path);
             if (path.length === length) {
-                checkTag(element, ignore, path)
+                checkTag(element, ignore, path);
             }
 
             // define only one part each iteration
             if (path.length === length) {
-                checkChilds(priority, element, ignore, path)
+                checkChilds(priority, element, ignore, path);
             }
         }
 
-        element = element.parentNode
-        length = path.length
+        element = element.parentNode;
+        length = path.length;
     }
 
     if (element === root) {
-        const pattern = findPattern(priority, element, ignore)
-        path.unshift(pattern)
+        const pattern = findPattern(priority, element, ignore);
+        path.unshift(pattern);
     }
 
-    return path.join(' ')
+    return path.join(' ');
 }
 
 /**
@@ -124,15 +114,16 @@ export default function match (node, options) {
  * @return {boolean}                 - [description]
  */
 function checkAttributes (priority, element, ignore, path, parent = element.parentNode) {
-    const pattern = findAttributesPattern(priority, element, ignore)
+    const pattern = findAttributesPattern(priority, element, ignore);
     if (pattern) {
-        const matches = parent.querySelectorAll(pattern)
+        if (parent === null || parent === undefined) return false;
+        const matches = parent.querySelectorAll(pattern);
         if (matches.length === 1) {
-            path.unshift(pattern)
-            return true
+            path.unshift(pattern);
+            return true;
         }
     }
-    return false
+    return false;
 }
 
 /**
@@ -144,58 +135,57 @@ function checkAttributes (priority, element, ignore, path, parent = element.pare
  * @return {string?}                 - [description]
  */
 function findAttributesPattern (priority, element, ignore) {
-  const attributes = element.attributes
-  var keys = [];
-  for(var i = 0; i < attributes.length; i++) {
-    // skip null attributes in IE 11
-    if (attributes[i]) {
-      keys.push(i);
+    const attributes = element.attributes;
+    var keys = [];
+    for(var i = 0; i < attributes.length; i++) {
+        // skip null attributes in IE 11
+        if (attributes[i]) {
+            keys.push(i);
+        }
     }
-  }
-  const sortedKeys = Object.keys(attributes).sort((curr, next) => {
-    const currPos = priority.indexOf(attributes[curr].name)
-    const nextPos = priority.indexOf(attributes[next].name)
-    if (currPos === -1 || nextPos === -1) {
-      return nextPos - currPos;
-    }
-    return currPos - nextPos
-  })
+    const sortedKeys = Object.keys(attributes).sort((curr, next) => {
+        const currPos = priority.indexOf(attributes[curr].name);
+        const nextPos = priority.indexOf(attributes[next].name);
+        if (currPos === -1 || nextPos === -1) {
+            return nextPos - currPos;
+        }
+        return currPos - nextPos;
+    })
 
     for (var i = 0, l = sortedKeys.length; i < l; i++) {
-        const key = sortedKeys[i]
-        const attribute = attributes[key]
-        const attributeName = attribute.name
-        const attributeValue = escapeValue(attribute.value)
+        const key = sortedKeys[i];
+        const attribute = attributes[key];
+        const attributeName = attribute.name;
+        const attributeValue = escapeValue(attribute.value);
 
-        const currentIgnore = ignore[attributeName] || ignore.attribute
-        const currentIgnore = ignore[attributeName] || ignore.attribute
-        const currentDefaultIgnore = defaultIgnore[attributeName] || defaultIgnore.attribute
+        const currentIgnore = ignore[attributeName] || ignore.attribute;
+        const currentDefaultIgnore = defaultIgnore[attributeName] || defaultIgnore.attribute;
         if (checkIgnore(currentIgnore, attributeName, attributeValue, currentDefaultIgnore)) {
             continue
         }
 
-        var pattern = `[${attributeName}="${attributeValue}"]`
+        var pattern = `[${attributeName}="${attributeValue}"]`;
 
         if ((/\b\d/).test(attributeValue) === false) {
             if (attributeName === 'id') {
-                pattern = `#${attributeValue}`
+                pattern = `#${attributeValue}`;
             }
 
             if (attributeName === 'class') {
                 const classes = attributeValue.trim();
                 var className;
                 if(ignore.ignoreClass) {
-                    className = classes.split(/\s+/g).filter(ignore.ignoreClass).join('.')
+                    className = classes.split(/\s+/g).filter(ignore.ignoreClass).join('.');
                 } else {
-                    className = classes.replace(/\s+/g, '.')
+                    className = classes.replace(/\s+/g, '.');
                 }
-                pattern = null
+                pattern = null;
             }
         }
 
-        return pattern
+        return pattern;
     }
-    return null
+    return null;
 }
 
 /**
@@ -208,15 +198,16 @@ function findAttributesPattern (priority, element, ignore) {
  * @return {boolean}                - [description]
  */
 function checkTag (element, ignore, path, parent = element.parentNode) {
-    const pattern = findTagPattern(element, ignore)
+    const pattern = findTagPattern(element, ignore);
     if (pattern) {
-        const matches = parent.getElementsByTagName(pattern)
+        if (parent === null || parent === undefined) return false;
+        const matches = parent.getElementsByTagName(pattern);
         if (matches.length === 1) {
-            path.unshift(pattern)
-            return true
+            path.unshift(pattern);
+            return true;
         }
     }
-    return false
+    return false;
 }
 
 /**
@@ -227,11 +218,11 @@ function checkTag (element, ignore, path, parent = element.parentNode) {
  * @return {boolean}             - [description]
  */
 function findTagPattern (element, ignore) {
-    const tagName = element.tagName.toLowerCase()
+    const tagName = element.tagName.toLowerCase();
     if (checkIgnore(ignore.tag, null, tagName)) {
-        return null
+        return null;
     }
-    return tagName
+    return tagName;
 }
 
 /**
@@ -246,23 +237,24 @@ function findTagPattern (element, ignore) {
  * @return {boolean}                 - [description]
  */
 function checkChilds (priority, element, ignore, path) {
-    const parent = element.parentNode
-    const children = parent.childTags || parent.children
+    const parent = element.parentNode;
+    if (parent === null || parent === undefined) return false;
+    const children = parent.childTags || parent.children;
     for (var i = 0, l = children.length; i < l; i++) {
-        const child = children[i]
+        const child = children[i];
         if (child === element) {
-            const childPattern = findPattern(priority, child, ignore)
+            const childPattern = findPattern(priority, child, ignore);
             if (!childPattern) {
                 return console.warn(`
           Element couldn\'t be matched through strict ignore pattern!
-        `, child, ignore, childPattern)
+        `, child, ignore, childPattern);
             }
-            const pattern = `> ${childPattern}:nth-child(${i+1})`
-            path.unshift(pattern)
-            return true
+            const pattern = `> ${childPattern}:nth-child(${i+1})`;
+            path.unshift(pattern);
+            return true;
         }
     }
-    return false
+    return false;
 }
 
 /**
@@ -274,11 +266,11 @@ function checkChilds (priority, element, ignore, path) {
  * @return {string}                  - [description]
  */
 function findPattern (priority, element, ignore) {
-    var pattern = findAttributesPattern(priority, element, ignore)
+    var pattern = findAttributesPattern(priority, element, ignore);
     if (!pattern) {
-        pattern = findTagPattern(element, ignore)
+        pattern = findTagPattern(element, ignore);
     }
-    return pattern
+    return pattern;
 }
 
 /**
@@ -292,11 +284,11 @@ function findPattern (priority, element, ignore) {
  */
 function checkIgnore (predicate, name, value, defaultPredicate) {
     if (!value) {
-        return true
+        return true;
     }
-    const check = predicate || defaultPredicate
+    const check = predicate || defaultPredicate;
     if (!check) {
-        return false
+        return false;
     }
-    return check(name, value, defaultPredicate)
+    return check(name, value, defaultPredicate);
 }

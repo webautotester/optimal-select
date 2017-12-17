@@ -6,6 +6,12 @@
   "bugs": {
     "url": "https://github.com/Autarc/optimal-select/issues"
   },
+  "scripts": {
+    "prepublish": "npm run build",
+    "check": "npm outdated -depth 0",
+    "build": "webpack --config webpack.config.js",
+    "example": "open-url 'http:/localhost:8080/example' && http-server"
+  },
   "devDependencies": {
     "babel-loader": "^6.2.5",
     "babel-plugin-add-module-exports": "^0.2.1",
@@ -24,7 +30,7 @@
     "gulp-watch": "^4.3.10",
     "http-server": "^0.9.0",
     "open-url": "^2.0.2",
-    "webpack": "^2.2.0-rc.2"
+    "webpack": "^3.10.0"
   },
   "homepage": "https://github.com/Autarc/optimal-select",
   "keywords": [
@@ -39,12 +45,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Autarc/optimal-select.git"
-  },
-  "scripts": {
-    "prepublish": "npm run build",
-    "check": "npm outdated -depth 0",
-    "build": "NODE_ENV=production node build",
-    "dev": "NODE_ENV=development node build",
-    "example": "open-url 'http:/localhost:8080/example' && http-server"
   }
 }
