@@ -19,7 +19,6 @@ import { getCommonAncestor, getCommonProperties } from './common';
  * @return {string}              - [description]
  */
 export function getSingleSelector (element, options = {}) {
-  console.log(`element: ${JSON.stringify(element)}, name: ${element.nodeName}, parent: ${element.parentElement}`);
   // 3 refers to - Node.TEXT_NODE type
   if (element.nodeType === 3) {
     element = element.parentNode; 
